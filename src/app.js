@@ -4,6 +4,7 @@ const morgan = require('morgan');
 const { NODE_ENV } = require('./config');
 const routes = require('./routes');
 const { notFound, errorHandler } = require('./middleware');
+const { swaggerUi, openapiDocument } = require('./swagger');
 
 const app = express();
 
@@ -23,6 +24,8 @@ app.get('/', (req, res) => {
   });
 });
 
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(openapiDocument));
+app.get('/openapi.json', (req, res) => res.json(openapiDocument));
 app.use('/api', routes);
 app.use(notFound);
 app.use(errorHandler);

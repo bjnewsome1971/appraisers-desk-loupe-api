@@ -1,0 +1,134 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "The Appraiser's Desk & Loupe API",
+    "version": "1.0.0",
+    "description": "REST API for authentication, property management, and appraisal workflows."
+  },
+  "servers": [
+    { "url": "http://localhost:5000", "description": "Local development" }
+  ],
+  "tags": [
+    { "name": "System", "description": "Health and API status" },
+    { "name": "Auth", "description": "User registration and authentication" },
+    { "name": "Properties", "description": "Authenticated property records" },
+    { "name": "Appraisals", "description": "Authenticated appraisal records" },
+    { "name": "Users", "description": "Admin user management" }
+  ],
+  "components": {
+    "securitySchemes": {
+      "bearerAuth": { "type": "http", "scheme": "bearer", "bearerFormat": "JWT" }
+    },
+    "schemas": {
+      "User": {
+        "type": "object",
+        "properties": {
+          "_id": { "type": "string", "example": "507f1f77bcf86cd799439011" },
+          "name": { "type": "string", "example": "Jane Doe" },
+          "email": { "type": "string", "format": "email", "example": "jane@example.com" },
+          "role": { "type": "string", "enum": ["user", "admin"], "example": "user" }
+        }
+      },
+      "Property": {
+        "type": "object",
+        "required": ["address", "city", "state"],
+        "properties": {
+          "address": { "type": "string", "example": "123 Main St" },
+          "city": { "type": "string", "example": "Austin" },
+          "state": { "type": "string", "minLength": 2, "maxLength": 2, "example": "TX" },
+          "zipCode": { "type": "string", "example": "78701" },
+          "parcelNumber": { "type": "string" },
+          "legalDescription": { "type": "string" },
+          "propertyType": { "type": "string", "enum": ["single-family", "condo", "multi-family", "commercial", "land", "other"] },
+          "squareFootage": { "type": "number", "minimum": 0 },
+          "bedrooms": { "type": "number", "minimum": 0 },
+          "bathrooms": { "type": "number", "minimum": 0 },
+          "yearBuilt": { "type": "number", "minimum": 1800 },
+          "lotSize": { "type": "number", "minimum": 0 },
+          "notes": { "type": "string" }
+        }
+      },
+      "Appraisal": {
+        "type": "object",
+        "required": ["propertyAddress", "clientName"],
+        "properties": {
+          "propertyAddress": { "type": "string", "example": "123 Main St" },
+          "propertyType": { "type": "string", "enum": ["single-family", "condo", "multi-family", "commercial", "land", "other"] },
+          "clientName": { "type": "string", "example": "Jane Doe" },
+          "loanPurpose": { "type": "string", "enum": ["purchase", "refinance", "estate", "divorce", "tax appeal", "other"] },
+          "estimatedValue": { "type": "number", "minimum": 0, "example": 350000 },
+          "status": { "type": "string", "enum": ["draft", "in-progress", "submitted", "approved", "rejected"] },
+          "notes": { "type": "string" }
+        }
+      },
+      "Error": {
+        "type": "object",
+        "properties": { "message": { "oneOf": [{ "type": "string" }, { "type": "array", "items": { "type": "string" } }] } }
+      }
+    }
+  },
+  "paths": {
+    "/": {
+      "get": { "tags": ["System"], "summary": "API welcome message", "responses": { "200": { "description": "API metadata" } } }
+    },
+    "/api/health": {
+      "get": { "tags": ["System"], "summary": "Health check", "responses": { "200": { "description": "Healthy API" } } }
+    },
+    "/api/status": {
+      "get": { "tags": ["System"], "summary": "Application status", "responses": { "200": { "description": "Application status" } } }
+    },
+    "/api/auth/register": {
+      "post": {
+        "tags": ["Auth"], "summary": "Register a user",
+        "requestBody": { "required": true, "content": { "application/json": { "schema": { "type": "object", "required": ["name", "email", "password"], "properties": { "name": { "type": "string" }, "email": { "type": "string", "format": "email" }, "password": { "type": "string", "format": "password", "example": "StrongPass1!" } } } } } },
+        "responses": { "201": { "description": "User registered" }, "400": { "$ref": "#/components/responses/BadRequest" } }
+      }
+    },
+    "/api/auth/login": {
+      "post": {
+        "tags": ["Auth"], "summary": "Log in and receive a JWT",
+        "requestBody": { "required": true, "content": { "application/json": { "schema": { "type": "object", "required": ["email", "password"], "properties": { "email": { "type": "string", "format": "email" }, "password": { "type": "string", "format": "password" } } } } } },
+        "responses": { "200": { "description": "Authenticated" }, "401": { "$ref": "#/components/responses/Unauthorized" } }
+      }
+    },
+    "/api/auth/me": {
+      "get": { "tags": ["Auth"], "summary": "Get current user", "security": [{ "bearerAuth": [] }], "responses": { "200": { "description": "Current user" }, "401": { "$ref": "#/components/responses/Unauthorized" } } }
+    },
+    "/api/properties": {
+      "get": { "tags": ["Properties"], "summary": "List current user's properties", "security": [{ "bearerAuth": [] }], "responses": { "200": { "description": "Property list" } } },
+      "post": { "tags": ["Properties"], "summary": "Create a property", "security": [{ "bearerAuth": [] }], "requestBody": { "required": true, "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Property" } } } }, "responses": { "201": { "description": "Property created" }, "400": { "$ref": "#/components/responses/BadRequest" } } }
+    },
+    "/api/properties/{id}": {
+      "parameters": [{ "$ref": "#/components/parameters/Id" }],
+      "get": { "tags": ["Properties"], "summary": "Get a property", "security": [{ "bearerAuth": [] }], "responses": { "200": { "description": "Property" }, "404": { "$ref": "#/components/responses/NotFound" } } },
+      "put": { "tags": ["Properties"], "summary": "Update a property", "security": [{ "bearerAuth": [] }], "requestBody": { "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Property" } } } }, "responses": { "200": { "description": "Updated property" } } },
+      "delete": { "tags": ["Properties"], "summary": "Delete a property", "security": [{ "bearerAuth": [] }], "responses": { "200": { "description": "Property deleted" } } }
+    },
+    "/api/appraisals": {
+      "get": { "tags": ["Appraisals"], "summary": "List current user's appraisals", "security": [{ "bearerAuth": [] }], "responses": { "200": { "description": "Appraisal list" } } },
+      "post": { "tags": ["Appraisals"], "summary": "Create an appraisal", "security": [{ "bearerAuth": [] }], "requestBody": { "required": true, "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Appraisal" } } } }, "responses": { "201": { "description": "Appraisal created" }, "400": { "$ref": "#/components/responses/BadRequest" } } }
+    },
+    "/api/appraisals/{id}": {
+      "parameters": [{ "$ref": "#/components/parameters/Id" }],
+      "get": { "tags": ["Appraisals"], "summary": "Get an appraisal", "security": [{ "bearerAuth": [] }], "responses": { "200": { "description": "Appraisal" }, "404": { "$ref": "#/components/responses/NotFound" } } },
+      "put": { "tags": ["Appraisals"], "summary": "Update an appraisal", "security": [{ "bearerAuth": [] }], "requestBody": { "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Appraisal" } } } }, "responses": { "200": { "description": "Updated appraisal" } } },
+      "delete": { "tags": ["Appraisals"], "summary": "Delete an appraisal", "security": [{ "bearerAuth": [] }], "responses": { "200": { "description": "Appraisal deleted" } } }
+    },
+    "/api/users": {
+      "get": { "tags": ["Users"], "summary": "List users", "description": "Admin only.", "security": [{ "bearerAuth": [] }], "responses": { "200": { "description": "User list" }, "403": { "$ref": "#/components/responses/Forbidden" } } }
+    },
+    "/api/users/{id}": {
+      "parameters": [{ "$ref": "#/components/parameters/Id" }],
+      "get": { "tags": ["Users"], "summary": "Get a user", "description": "Admin only.", "security": [{ "bearerAuth": [] }], "responses": { "200": { "description": "User" }, "403": { "$ref": "#/components/responses/Forbidden" }, "404": { "$ref": "#/components/responses/NotFound" } } }
+    }
+  },
+  "components": {
+    "parameters": { "Id": { "name": "id", "in": "path", "required": true, "schema": { "type": "string", "pattern": "^[a-fA-F0-9]{24}$" } } },
+    "responses": {
+      "BadRequest": { "description": "Invalid request", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } } },
+      "Unauthorized": { "description": "Authentication required", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } } },
+      "Forbidden": { "description": "Insufficient permissions", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } } },
+      "NotFound": { "description": "Resource not found", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } } }
+    }
+  }
+}
