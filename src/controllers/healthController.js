@@ -1,5 +1,3 @@
-const { getHealthStatus, getAppStatus } = require('../controllers/healthController');
-
 const getHealthStatus = async (req, res) => {
   res.json({
     status: 'ok',
