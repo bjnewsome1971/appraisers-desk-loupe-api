@@ -4,6 +4,7 @@ const statusRoutes = require('./status');
 const authRoutes = require('./auth');
 const appraisalsRoutes = require('./appraisals');
 const propertiesRoutes = require('./properties');
+const usersRoutes = require('./users');
 
 const router = Router();
 
@@ -12,5 +13,6 @@ router.use('/status', statusRoutes);
 router.use('/auth', authRoutes);
 router.use('/appraisals', appraisalsRoutes);
 router.use('/properties', propertiesRoutes);
+router.use('/users', usersRoutes);
 
 module.exports = router;
