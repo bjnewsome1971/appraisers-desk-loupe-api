@@ -1,7 +1,8 @@
 const express = require('express');
 const cors = require('cors');
 const morgan = require('morgan');
-const { PORT, NODE_ENV } = require('./config');
+const { NODE_ENV, PORT } = require('./config');
+const { connectDB } = require('./config/db');
 const routes = require('./routes');
 const { notFound, errorHandler } = require('./middleware');
 
@@ -27,5 +28,7 @@ app.use('/api', routes);
 
 app.use(notFound);
 app.use(errorHandler);
+
+connectDB();
 
 module.exports = app;
