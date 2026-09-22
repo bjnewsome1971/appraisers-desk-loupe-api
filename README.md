@@ -1,3 +1,3 @@
-# appraisers-desk-loupe-api
+# The Appraiser's Desk & Loupe API
 
-This repository was initialized for the appraisers desk loupe API.
+This repository contains the Node.js/Express backend for **The Appraiser's Desk & Loupe** app.
