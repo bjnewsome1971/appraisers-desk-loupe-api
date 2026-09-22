@@ -1,21 +1,10 @@
-const express = require('express');
+const { Router } = require('express');
+const healthRoutes = require('./health');
+const statusRoutes = require('./status');
 
-const router = express.Router();
+const router = Router();
 
-router.get('/health', (req, res) => {
-  res.json({
-    status: 'ok',
-    uptime: process.uptime(),
-    timestamp: new Date().toISOString()
-  });
-});
-
-router.get('/status', (req, res) => {
-  res.json({
-    app: "The Appraiser's Desk & Loupe API",
-    environment: process.env.NODE_ENV || 'development',
-    port: process.env.PORT || 5000
-  });
-});
+router.use('/health', healthRoutes);
+router.use('/status', statusRoutes);
 
 module.exports = router;

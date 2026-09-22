@@ -1,13 +1,19 @@
 const express = require('express');
 const cors = require('cors');
 const morgan = require('morgan');
-require('dotenv').config();
+const { PORT, NODE_ENV } = require('./config');
+const routes = require('./routes');
+const { notFound, errorHandler } = require('./middleware');
 
 const app = express();
 
-app.use(cors());
+app.use(cors({
+  origin: process.env.CLIENT_URL || '*',
+  credentials: true
+}));
 app.use(express.json());
-app.use(morgan('dev'));
+app.use(express.urlencoded({ extended: true }));
+app.use(morgan(NODE_ENV === 'production' ? 'combined' : 'dev'));
 
 app.get('/', (req, res) => {
   res.json({
@@ -17,10 +23,9 @@ app.get('/', (req, res) => {
   });
 });
 
-app.use('/api', require('./routes'));
+app.use('/api', routes);
 
-app.use((req, res) => {
-  res.status(404).json({ message: 'Route not found' });
-});
+app.use(notFound);
+app.use(errorHandler);
 
 module.exports = app;
