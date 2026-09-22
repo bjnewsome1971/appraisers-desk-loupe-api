@@ -1,15 +1,26 @@
 const express = require('express');
 const cors = require('cors');
 const morgan = require('morgan');
-const { NODE_ENV } = require('./config');
+const { NODE_ENV, APP_URL, CLIENT_URL } = require('./config');
 const routes = require('./routes');
 const { notFound, errorHandler } = require('./middleware');
 const { swaggerUi, openapiDocument } = require('./swagger');
 
 const app = express();
 
+const allowedOrigins = [APP_URL, CLIENT_URL, 'http://localhost:3000', 'http://127.0.0.1:3000']
+  .filter(Boolean)
+  .map((origin) => origin.replace(/\/$/, ''));
+
 app.use(cors({
-  origin: process.env.CLIENT_URL || '*',
+  origin: (origin, callback) => {
+    if (!origin || allowedOrigins.includes(origin.replace(/\/$/, ''))) {
+      callback(null, true);
+      return;
+    }
+
+    callback(new Error('Not allowed by CORS'));
+  },
   credentials: true
 }));
 app.use(express.json());
