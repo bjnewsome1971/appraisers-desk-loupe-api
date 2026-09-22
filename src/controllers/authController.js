@@ -56,6 +56,12 @@ const loginUser = async (req, res) => {
       return res.status(401).json({ message: 'Invalid email or password.' });
     }
 
+    // OAuth-only users do not have a password. Treat password login as invalid
+    // rather than passing null to bcrypt.compare, which throws an exception.
+    if (typeof user.password !== 'string' || !user.password) {
+      return res.status(401).json({ message: 'Invalid email or password.' });
+    }
+
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
       return res.status(401).json({ message: 'Invalid email or password.' });
