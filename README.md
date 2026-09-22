@@ -26,15 +26,22 @@ The API will run on the port defined in `.env` (default: `5000`).
 - `GET /` — API welcome message
 - `GET /api/health` — health check
 - `GET /api/status` — basic app status
+- `POST /api/auth/register` — create a user
+- `POST /api/auth/login` — sign in and receive a JWT
+- `GET /api/auth/me` — fetch current user profile
+- `GET /api/appraisals` — list appraisals for current user
+- `POST /api/appraisals` — create appraisal
+- `GET /api/properties` — list properties for current user
+- `POST /api/properties` — create property
+- `GET /api/users` — admin-only user list
 
-## Project structure
+## Admin seed
 
-```text
-src/
-  app.js
-  server.js
-  config/
-  controllers/
-  middleware/
-  routes/
+```bash
+npm run seed:admin
 ```
+
+This creates a default admin account for local development:
+
+- email: `admin@appraisersdesk.com`
+- password: `Admin123!`
