@@ -6,7 +6,10 @@
     "description": "REST API for authentication, property management, and appraisal workflows."
   },
   "servers": [
-    { "url": "http://localhost:5000", "description": "Local development" }
+    {
+      "url": "http://localhost:5000",
+      "description": "Local development"
+    }
   ],
   "tags": [
     { "name": "System", "description": "Health and API status" },
@@ -17,7 +20,11 @@
   ],
   "components": {
     "securitySchemes": {
-      "bearerAuth": { "type": "http", "scheme": "bearer", "bearerFormat": "JWT" }
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
+      }
     },
     "schemas": {
       "User": {
@@ -29,106 +36,713 @@
           "role": { "type": "string", "enum": ["user", "admin"], "example": "user" }
         }
       },
+      "HealthStatus": {
+        "type": "object",
+        "properties": {
+          "status": { "type": "string", "example": "ok" },
+          "uptime": { "type": "number", "example": 123.456 },
+          "timestamp": { "type": "string", "format": "date-time", "example": "2026-09-22T13:00:00.000Z" }
+        }
+      },
+      "AppStatus": {
+        "type": "object",
+        "properties": {
+          "app": { "type": "string", "example": "The Appraiser's Desk & Loupe API" },
+          "environment": { "type": "string", "example": "development" },
+          "port": { "type": "integer", "example": 5000 },
+          "message": { "type": "string", "example": "API ready for integration." }
+        }
+      },
+      "AuthRegisterRequest": {
+        "type": "object",
+        "required": ["name", "email", "password"],
+        "properties": {
+          "name": { "type": "string", "example": "Jane Doe" },
+          "email": { "type": "string", "format": "email", "example": "jane@example.com" },
+          "password": { "type": "string", "format": "password", "example": "StrongPass1!" }
+        }
+      },
+      "AuthLoginRequest": {
+        "type": "object",
+        "required": ["email", "password"],
+        "properties": {
+          "email": { "type": "string", "format": "email", "example": "jane@example.com" },
+          "password": { "type": "string", "format": "password", "example": "StrongPass1!" }
+        }
+      },
+      "AuthTokenResponse": {
+        "type": "object",
+        "properties": {
+          "token": { "type": "string", "example": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..." },
+          "user": { "$ref": "#/components/schemas/User" }
+        }
+      },
       "Property": {
         "type": "object",
         "required": ["address", "city", "state"],
         "properties": {
+          "_id": { "type": "string", "example": "507f1f77bcf86cd799439011" },
           "address": { "type": "string", "example": "123 Main St" },
           "city": { "type": "string", "example": "Austin" },
           "state": { "type": "string", "minLength": 2, "maxLength": 2, "example": "TX" },
           "zipCode": { "type": "string", "example": "78701" },
-          "parcelNumber": { "type": "string" },
-          "legalDescription": { "type": "string" },
-          "propertyType": { "type": "string", "enum": ["single-family", "condo", "multi-family", "commercial", "land", "other"] },
-          "squareFootage": { "type": "number", "minimum": 0 },
-          "bedrooms": { "type": "number", "minimum": 0 },
-          "bathrooms": { "type": "number", "minimum": 0 },
-          "yearBuilt": { "type": "number", "minimum": 1800 },
-          "lotSize": { "type": "number", "minimum": 0 },
-          "notes": { "type": "string" }
+          "parcelNumber": { "type": "string", "example": "ABC123" },
+          "legalDescription": { "type": "string", "example": "Lot 12, Block 4, Subdivision A" },
+          "propertyType": { "type": "string", "enum": ["single-family", "condo", "multi-family", "commercial", "land", "other"], "example": "single-family" },
+          "squareFootage": { "type": "number", "minimum": 0, "example": 1800 },
+          "bedrooms": { "type": "number", "minimum": 0, "example": 3 },
+          "bathrooms": { "type": "number", "minimum": 0, "example": 2 },
+          "yearBuilt": { "type": "number", "minimum": 1800, "example": 2005 },
+          "lotSize": { "type": "number", "minimum": 0, "example": 4200 },
+          "notes": { "type": "string", "example": "Owner occupied property." },
+          "createdBy": { "type": "string", "example": "507f1f77bcf86cd799439011" },
+          "createdAt": { "type": "string", "format": "date-time", "example": "2026-09-22T13:00:00.000Z" },
+          "updatedAt": { "type": "string", "format": "date-time", "example": "2026-09-22T13:00:00.000Z" }
         }
       },
       "Appraisal": {
         "type": "object",
         "required": ["propertyAddress", "clientName"],
         "properties": {
+          "_id": { "type": "string", "example": "507f1f77bcf86cd799439011" },
           "propertyAddress": { "type": "string", "example": "123 Main St" },
-          "propertyType": { "type": "string", "enum": ["single-family", "condo", "multi-family", "commercial", "land", "other"] },
+          "propertyType": { "type": "string", "enum": ["single-family", "condo", "multi-family", "commercial", "land", "other"], "example": "single-family" },
           "clientName": { "type": "string", "example": "Jane Doe" },
-          "loanPurpose": { "type": "string", "enum": ["purchase", "refinance", "estate", "divorce", "tax appeal", "other"] },
+          "loanPurpose": { "type": "string", "enum": ["purchase", "refinance", "estate", "divorce", "tax appeal", "other"], "example": "purchase" },
           "estimatedValue": { "type": "number", "minimum": 0, "example": 350000 },
-          "status": { "type": "string", "enum": ["draft", "in-progress", "submitted", "approved", "rejected"] },
-          "notes": { "type": "string" }
+          "status": { "type": "string", "enum": ["draft", "in-progress", "submitted", "approved", "rejected"], "example": "draft" },
+          "notes": { "type": "string", "example": "Initial review notes." },
+          "createdBy": { "type": "string", "example": "507f1f77bcf86cd799439011" },
+          "createdAt": { "type": "string", "format": "date-time", "example": "2026-09-22T13:00:00.000Z" },
+          "updatedAt": { "type": "string", "format": "date-time", "example": "2026-09-22T13:00:00.000Z" }
         }
       },
       "Error": {
         "type": "object",
-        "properties": { "message": { "oneOf": [{ "type": "string" }, { "type": "array", "items": { "type": "string" } }] } }
+        "properties": {
+          "message": {
+            "oneOf": [
+              { "type": "string", "example": "Invalid email or password." },
+              { "type": "array", "items": { "type": "string" }, "example": ["address must be a non-empty string."] }
+            ]
+          }
+        }
+      }
+    },
+    "parameters": {
+      "Id": {
+        "name": "id",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string",
+          "pattern": "^[a-fA-F0-9]{24}$"
+        },
+        "description": "MongoDB ObjectId",
+        "example": "507f1f77bcf86cd799439011"
+      }
+    },
+    "responses": {
+      "BadRequest": {
+        "description": "Invalid request",
+        "content": {
+          "application/json": {
+            "schema": { "$ref": "#/components/schemas/Error" },
+            "example": {
+              "message": ["address must be a non-empty string.", "state must be a two-letter state abbreviation."]
+            }
+          }
+        }
+      },
+      "Unauthorized": {
+        "description": "Authentication required",
+        "content": {
+          "application/json": {
+            "schema": { "$ref": "#/components/schemas/Error" },
+            "example": {
+              "message": "Not authorized, no token provided."
+            }
+          }
+        }
+      },
+      "Forbidden": {
+        "description": "Insufficient permissions",
+        "content": {
+          "application/json": {
+            "schema": { "$ref": "#/components/schemas/Error" },
+            "example": {
+              "message": "You do not have permission to access this resource."
+            }
+          }
+        }
+      },
+      "NotFound": {
+        "description": "Resource not found",
+        "content": {
+          "application/json": {
+            "schema": { "$ref": "#/components/schemas/Error" },
+            "example": {
+              "message": "Property not found."
+            }
+          }
+        }
       }
     }
   },
   "paths": {
     "/": {
-      "get": { "tags": ["System"], "summary": "API welcome message", "responses": { "200": { "description": "API metadata" } } }
+      "get": {
+        "tags": ["System"],
+        "summary": "API welcome message",
+        "responses": {
+          "200": {
+            "description": "API metadata",
+            "content": {
+              "application/json": {
+                "example": {
+                  "name": "The Appraiser's Desk & Loupe API",
+                  "status": "running",
+                  "message": "Welcome to the API backend."
+                }
+              }
+            }
+          }
+        }
+      }
     },
     "/api/health": {
-      "get": { "tags": ["System"], "summary": "Health check", "responses": { "200": { "description": "Healthy API" } } }
+      "get": {
+        "tags": ["System"],
+        "summary": "Health check",
+        "responses": {
+          "200": {
+            "description": "Healthy API",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/HealthStatus" },
+                "example": {
+                  "status": "ok",
+                  "uptime": 123.456,
+                  "timestamp": "2026-09-22T13:00:00.000Z"
+                }
+              }
+            }
+          }
+        }
+      }
     },
     "/api/status": {
-      "get": { "tags": ["System"], "summary": "Application status", "responses": { "200": { "description": "Application status" } } }
+      "get": {
+        "tags": ["System"],
+        "summary": "Application status",
+        "responses": {
+          "200": {
+            "description": "Application status",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/AppStatus" },
+                "example": {
+                  "app": "The Appraiser's Desk & Loupe API",
+                  "environment": "development",
+                  "port": 5000,
+                  "message": "API ready for integration."
+                }
+              }
+            }
+          }
+        }
+      }
     },
     "/api/auth/register": {
       "post": {
-        "tags": ["Auth"], "summary": "Register a user",
-        "requestBody": { "required": true, "content": { "application/json": { "schema": { "type": "object", "required": ["name", "email", "password"], "properties": { "name": { "type": "string" }, "email": { "type": "string", "format": "email" }, "password": { "type": "string", "format": "password", "example": "StrongPass1!" } } } } } },
-        "responses": { "201": { "description": "User registered" }, "400": { "$ref": "#/components/responses/BadRequest" } }
+        "tags": ["Auth"],
+        "summary": "Register a user",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/AuthRegisterRequest" }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "User registered",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/AuthTokenResponse" },
+                "example": {
+                  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+                  "user": {
+                    "_id": "507f1f77bcf86cd799439011",
+                    "name": "Jane Doe",
+                    "email": "jane@example.com",
+                    "role": "user"
+                  }
+                }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" }
+        }
       }
     },
     "/api/auth/login": {
       "post": {
-        "tags": ["Auth"], "summary": "Log in and receive a JWT",
-        "requestBody": { "required": true, "content": { "application/json": { "schema": { "type": "object", "required": ["email", "password"], "properties": { "email": { "type": "string", "format": "email" }, "password": { "type": "string", "format": "password" } } } } } },
-        "responses": { "200": { "description": "Authenticated" }, "401": { "$ref": "#/components/responses/Unauthorized" } }
+        "tags": ["Auth"],
+        "summary": "Log in and receive a JWT",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/AuthLoginRequest" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Authenticated",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/AuthTokenResponse" },
+                "example": {
+                  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+                  "user": {
+                    "_id": "507f1f77bcf86cd799439011",
+                    "name": "Jane Doe",
+                    "email": "jane@example.com",
+                    "role": "user"
+                  }
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/Unauthorized" }
+        }
       }
     },
     "/api/auth/me": {
-      "get": { "tags": ["Auth"], "summary": "Get current user", "security": [{ "bearerAuth": [] }], "responses": { "200": { "description": "Current user" }, "401": { "$ref": "#/components/responses/Unauthorized" } } }
+      "get": {
+        "tags": ["Auth"],
+        "summary": "Get current user",
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "200": {
+            "description": "Current user",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/User" },
+                "example": {
+                  "_id": "507f1f77bcf86cd799439011",
+                  "name": "Jane Doe",
+                  "email": "jane@example.com",
+                  "role": "user"
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/Unauthorized" }
+        }
+      }
     },
     "/api/properties": {
-      "get": { "tags": ["Properties"], "summary": "List current user's properties", "security": [{ "bearerAuth": [] }], "responses": { "200": { "description": "Property list" } } },
-      "post": { "tags": ["Properties"], "summary": "Create a property", "security": [{ "bearerAuth": [] }], "requestBody": { "required": true, "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Property" } } } }, "responses": { "201": { "description": "Property created" }, "400": { "$ref": "#/components/responses/BadRequest" } } }
+      "get": {
+        "tags": ["Properties"],
+        "summary": "List current user's properties",
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "200": {
+            "description": "Property list",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/Property" }
+                },
+                "example": [
+                  {
+                    "_id": "507f1f77bcf86cd799439011",
+                    "address": "123 Main St",
+                    "city": "Austin",
+                    "state": "TX",
+                    "zipCode": "78701",
+                    "parcelNumber": "ABC123",
+                    "legalDescription": "Lot 12, Block 4, Subdivision A",
+                    "propertyType": "single-family",
+                    "squareFootage": 1800,
+                    "bedrooms": 3,
+                    "bathrooms": 2,
+                    "yearBuilt": 2005,
+                    "lotSize": 4200,
+                    "notes": "Owner occupied property.",
+                    "createdBy": "507f1f77bcf86cd799439011",
+                    "createdAt": "2026-09-22T13:00:00.000Z",
+                    "updatedAt": "2026-09-22T13:00:00.000Z"
+                  }
+                ]
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": ["Properties"],
+        "summary": "Create a property",
+        "security": [{ "bearerAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/Property" }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Property created",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Property" },
+                "example": {
+                  "_id": "507f1f77bcf86cd799439011",
+                  "address": "123 Main St",
+                  "city": "Austin",
+                  "state": "TX",
+                  "zipCode": "78701",
+                  "parcelNumber": "ABC123",
+                  "legalDescription": "Lot 12, Block 4, Subdivision A",
+                  "propertyType": "single-family",
+                  "squareFootage": 1800,
+                  "bedrooms": 3,
+                  "bathrooms": 2,
+                  "yearBuilt": 2005,
+                  "lotSize": 4200,
+                  "notes": "Owner occupied property.",
+                  "createdBy": "507f1f77bcf86cd799439011",
+                  "createdAt": "2026-09-22T13:00:00.000Z",
+                  "updatedAt": "2026-09-22T13:00:00.000Z"
+                }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" }
+        }
+      }
     },
     "/api/properties/{id}": {
       "parameters": [{ "$ref": "#/components/parameters/Id" }],
-      "get": { "tags": ["Properties"], "summary": "Get a property", "security": [{ "bearerAuth": [] }], "responses": { "200": { "description": "Property" }, "404": { "$ref": "#/components/responses/NotFound" } } },
-      "put": { "tags": ["Properties"], "summary": "Update a property", "security": [{ "bearerAuth": [] }], "requestBody": { "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Property" } } } }, "responses": { "200": { "description": "Updated property" } } },
-      "delete": { "tags": ["Properties"], "summary": "Delete a property", "security": [{ "bearerAuth": [] }], "responses": { "200": { "description": "Property deleted" } } }
+      "get": {
+        "tags": ["Properties"],
+        "summary": "Get a property",
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "200": {
+            "description": "Property",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Property" },
+                "example": {
+                  "_id": "507f1f77bcf86cd799439011",
+                  "address": "123 Main St",
+                  "city": "Austin",
+                  "state": "TX",
+                  "zipCode": "78701",
+                  "parcelNumber": "ABC123",
+                  "legalDescription": "Lot 12, Block 4, Subdivision A",
+                  "propertyType": "single-family",
+                  "squareFootage": 1800,
+                  "bedrooms": 3,
+                  "bathrooms": 2,
+                  "yearBuilt": 2005,
+                  "lotSize": 4200,
+                  "notes": "Owner occupied property.",
+                  "createdBy": "507f1f77bcf86cd799439011",
+                  "createdAt": "2026-09-22T13:00:00.000Z",
+                  "updatedAt": "2026-09-22T13:00:00.000Z"
+                }
+              }
+            }
+          },
+          "404": { "$ref": "#/components/responses/NotFound" }
+        }
+      },
+      "put": {
+        "tags": ["Properties"],
+        "summary": "Update a property",
+        "security": [{ "bearerAuth": [] }],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/Property" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Updated property",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Property" },
+                "example": {
+                  "_id": "507f1f77bcf86cd799439011",
+                  "address": "123 Main St",
+                  "city": "Austin",
+                  "state": "TX",
+                  "zipCode": "78701",
+                  "parcelNumber": "ABC123",
+                  "legalDescription": "Lot 12, Block 4, Subdivision A",
+                  "propertyType": "single-family",
+                  "squareFootage": 1900,
+                  "bedrooms": 3,
+                  "bathrooms": 2,
+                  "yearBuilt": 2005,
+                  "lotSize": 4200,
+                  "notes": "Updated owner occupied property.",
+                  "createdBy": "507f1f77bcf86cd799439011",
+                  "createdAt": "2026-09-22T13:00:00.000Z",
+                  "updatedAt": "2026-09-22T13:30:00.000Z"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": ["Properties"],
+        "summary": "Delete a property",
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "200": {
+            "description": "Property deleted",
+            "content": {
+              "application/json": {
+                "example": {
+                  "message": "Property deleted successfully."
+                }
+              }
+            }
+          }
+        }
+      }
     },
     "/api/appraisals": {
-      "get": { "tags": ["Appraisals"], "summary": "List current user's appraisals", "security": [{ "bearerAuth": [] }], "responses": { "200": { "description": "Appraisal list" } } },
-      "post": { "tags": ["Appraisals"], "summary": "Create an appraisal", "security": [{ "bearerAuth": [] }], "requestBody": { "required": true, "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Appraisal" } } } }, "responses": { "201": { "description": "Appraisal created" }, "400": { "$ref": "#/components/responses/BadRequest" } } }
+      "get": {
+        "tags": ["Appraisals"],
+        "summary": "List current user's appraisals",
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "200": {
+            "description": "Appraisal list",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/Appraisal" }
+                },
+                "example": [
+                  {
+                    "_id": "607f1f77bcf86cd799439022",
+                    "propertyAddress": "123 Main St",
+                    "propertyType": "single-family",
+                    "clientName": "Jane Doe",
+                    "loanPurpose": "purchase",
+                    "estimatedValue": 350000,
+                    "status": "draft",
+                    "notes": "Initial review notes.",
+                    "createdBy": "507f1f77bcf86cd799439011",
+                    "createdAt": "2026-09-22T13:00:00.000Z",
+                    "updatedAt": "2026-09-22T13:00:00.000Z"
+                  }
+                ]
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": ["Appraisals"],
+        "summary": "Create an appraisal",
+        "security": [{ "bearerAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/Appraisal" }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Appraisal created",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Appraisal" },
+                "example": {
+                  "_id": "607f1f77bcf86cd799439022",
+                  "propertyAddress": "123 Main St",
+                  "propertyType": "single-family",
+                  "clientName": "Jane Doe",
+                  "loanPurpose": "purchase",
+                  "estimatedValue": 350000,
+                  "status": "draft",
+                  "notes": "Initial review notes.",
+                  "createdBy": "507f1f77bcf86cd799439011",
+                  "createdAt": "2026-09-22T13:00:00.000Z",
+                  "updatedAt": "2026-09-22T13:00:00.000Z"
+                }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" }
+        }
+      }
     },
     "/api/appraisals/{id}": {
       "parameters": [{ "$ref": "#/components/parameters/Id" }],
-      "get": { "tags": ["Appraisals"], "summary": "Get an appraisal", "security": [{ "bearerAuth": [] }], "responses": { "200": { "description": "Appraisal" }, "404": { "$ref": "#/components/responses/NotFound" } } },
-      "put": { "tags": ["Appraisals"], "summary": "Update an appraisal", "security": [{ "bearerAuth": [] }], "requestBody": { "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Appraisal" } } } }, "responses": { "200": { "description": "Updated appraisal" } } },
-      "delete": { "tags": ["Appraisals"], "summary": "Delete an appraisal", "security": [{ "bearerAuth": [] }], "responses": { "200": { "description": "Appraisal deleted" } } }
+      "get": {
+        "tags": ["Appraisals"],
+        "summary": "Get an appraisal",
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "200": {
+            "description": "Appraisal",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Appraisal" },
+                "example": {
+                  "_id": "607f1f77bcf86cd799439022",
+                  "propertyAddress": "123 Main St",
+                  "propertyType": "single-family",
+                  "clientName": "Jane Doe",
+                  "loanPurpose": "purchase",
+                  "estimatedValue": 350000,
+                  "status": "draft",
+                  "notes": "Initial review notes.",
+                  "createdBy": "507f1f77bcf86cd799439011",
+                  "createdAt": "2026-09-22T13:00:00.000Z",
+                  "updatedAt": "2026-09-22T13:00:00.000Z"
+                }
+              }
+            }
+          },
+          "404": { "$ref": "#/components/responses/NotFound" }
+        }
+      },
+      "put": {
+        "tags": ["Appraisals"],
+        "summary": "Update an appraisal",
+        "security": [{ "bearerAuth": [] }],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/Appraisal" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Updated appraisal",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Appraisal" },
+                "example": {
+                  "_id": "607f1f77bcf86cd799439022",
+                  "propertyAddress": "123 Main St",
+                  "propertyType": "single-family",
+                  "clientName": "Jane Doe",
+                  "loanPurpose": "purchase",
+                  "estimatedValue": 360000,
+                  "status": "submitted",
+                  "notes": "Updated review notes.",
+                  "createdBy": "507f1f77bcf86cd799439011",
+                  "createdAt": "2026-09-22T13:00:00.000Z",
+                  "updatedAt": "2026-09-22T13:45:00.000Z"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": ["Appraisals"],
+        "summary": "Delete an appraisal",
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "200": {
+            "description": "Appraisal deleted",
+            "content": {
+              "application/json": {
+                "example": {
+                  "message": "Appraisal deleted successfully."
+                }
+              }
+            }
+          }
+        }
+      }
     },
     "/api/users": {
-      "get": { "tags": ["Users"], "summary": "List users", "description": "Admin only.", "security": [{ "bearerAuth": [] }], "responses": { "200": { "description": "User list" }, "403": { "$ref": "#/components/responses/Forbidden" } } }
+      "get": {
+        "tags": ["Users"],
+        "summary": "List users",
+        "description": "Admin only.",
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "200": {
+            "description": "User list",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/User" }
+                },
+                "example": [
+                  {
+                    "_id": "507f1f77bcf86cd799439011",
+                    "name": "Jane Doe",
+                    "email": "jane@example.com",
+                    "role": "user"
+                  },
+                  {
+                    "_id": "507f1f77bcf86cd799439012",
+                    "name": "Admin User",
+                    "email": "admin@appraisersdesk.com",
+                    "role": "admin"
+                  }
+                ]
+              }
+            }
+          },
+          "403": { "$ref": "#/components/responses/Forbidden" }
+        }
+      }
     },
     "/api/users/{id}": {
       "parameters": [{ "$ref": "#/components/parameters/Id" }],
-      "get": { "tags": ["Users"], "summary": "Get a user", "description": "Admin only.", "security": [{ "bearerAuth": [] }], "responses": { "200": { "description": "User" }, "403": { "$ref": "#/components/responses/Forbidden" }, "404": { "$ref": "#/components/responses/NotFound" } } }
-    }
-  },
-  "components": {
-    "parameters": { "Id": { "name": "id", "in": "path", "required": true, "schema": { "type": "string", "pattern": "^[a-fA-F0-9]{24}$" } } },
-    "responses": {
-      "BadRequest": { "description": "Invalid request", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } } },
-      "Unauthorized": { "description": "Authentication required", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } } },
-      "Forbidden": { "description": "Insufficient permissions", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } } },
-      "NotFound": { "description": "Resource not found", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } } }
+      "get": {
+        "tags": ["Users"],
+        "summary": "Get a user",
+        "description": "Admin only.",
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "200": {
+            "description": "User",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/User" },
+                "example": {
+                  "_id": "507f1f77bcf86cd799439011",
+                  "name": "Jane Doe",
+                  "email": "jane@example.com",
+                  "role": "user"
+                }
+              }
+            }
+          },
+          "403": { "$ref": "#/components/responses/Forbidden" },
+          "404": { "$ref": "#/components/responses/NotFound" }
+        }
+      }
     }
   }
 }
